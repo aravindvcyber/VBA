@@ -1,0 +1,357 @@
+Create A Pivot Table
+Sub CreatePivotTable()
+'PURPOSE: Creates a brand new Pivot table on a new worksheet from data in the ActiveSheet
+
+
+Dim sht As Worksheet
+Dim pvtCache As PivotCache
+Dim pvt As PivotTable
+Dim StartPvt As String
+Dim SrcData As String
+
+'Determine the data range you want to pivot
+  SrcData = ActiveSheet.Name & "!" & Range("A1:R100").Address(ReferenceStyle:=xlR1C1)
+
+'Create a new worksheet
+  Set sht = Sheets.Add
+
+'Where do you want Pivot Table to start?
+  StartPvt = sht.Name & "!" & sht.Range("A3").Address(ReferenceStyle:=xlR1C1)
+
+'Create Pivot Cache from Source Data
+  Set pvtCache = ActiveWorkbook.PivotCaches.Create( _
+    SourceType:=xlDatabase, _
+    SourceData:=SrcData)
+
+'Create Pivot table from Pivot Cache
+  Set pvt = pvtCache.CreatePivotTable( _
+    TableDestination:=StartPvt, _
+    TableName:="PivotTable1")
+
+End Sub
+
+Delete A Specific Pivot Table
+Sub DeletePivotTable()
+'PURPOSE: How to delete a specifc Pivot Table
+
+
+'Delete Pivot Table By Name
+  ActiveSheet.PivotTables("PivotTable1").TableRange2.Clear
+
+End Sub
+
+Delete All Pivot Tables
+Sub DeleteAllPivotTables()
+'PURPOSE: Delete all Pivot Tables in your Workbook
+
+
+Dim sht As Worksheet
+Dim pvt As PivotTable
+
+'Loop Through Each Pivot Table In Currently Viewed Workbook
+  For Each sht In ActiveWorkbook.Worksheets
+    For Each pvt In sht.PivotTables
+      pvt.TableRange2.Clear
+    Next pvt
+  Next sht
+  
+End Sub
+
+Add Pivot Fields
+Sub Adding_PivotFields()
+'PURPOSE: Show how to add various Pivot Fields to Pivot Table
+
+
+Dim pvt As PivotTable
+
+Set pvt = ActiveSheet.PivotTables("PivotTable1")
+    
+  'Add item to the Report Filter
+    pvt.PivotFields("Year").Orientation = xlPageField
+  
+  'Add item to the Column Labels
+    pvt.PivotFields("Month").Orientation = xlColumnField
+    
+  'Add item to the Row Labels
+    pvt.PivotFields("Account").Orientation = xlRowField
+    
+  'Position Item in list
+    pvt.PivotFields("Year").Position = 1
+    
+  'Format Pivot Field
+    pvt.PivotFields("Year").NumberFormat = "#,##0"
+    
+  'Turn on Automatic updates/calculations --like screenupdating to speed up code
+    pvt.ManualUpdate = False
+    
+End Sub
+
+Add Calculated Pivot Fields
+Sub AddCalculatedField()
+'PURPOSE: Add a calculated field to a pivot table
+
+   
+Dim pvt As PivotTable
+Dim pf As PivotField
+
+'Set Variable to Desired Pivot Table
+  Set pvt = ActiveSheet.PivotTables("PivotTable1")
+
+'Set Variable Equal to Desired Calculated Pivot Field
+  For Each pf In pvt.PivotFields
+    If pf.SourceName = "Inflation" Then Exit For
+  Next
+
+'Add Calculated Field to Pivot Table
+  pvt.AddDataField pf
+
+End Sub
+
+Add A Values Field
+Sub AddValuesField()
+'PURPOSE: Add A Values Field to a Pivot Table
+
+
+Dim pvt As PivotTable
+Dim pf As String
+Dim pf_Name As String
+
+pf = "Salaries"
+pf_Name = "Sum of Salaries"
+
+Set pvt = ActiveSheet.PivotTables("PivotTable1")
+
+pvt.AddDataField pvt.PivotFields("Salaries"), pf_Name, xlSum
+
+End Sub
+
+Remove Pivot Fields
+Sub RemovePivotField()
+'PURPOSE: Remove a field from a Pivot Table
+
+
+'Removing Filter, Columns, Rows
+  ActiveSheet.PivotTables("PivotTable1").PivotFields("Year").Orientation = xlHidden
+    
+'Removing Values
+  ActiveSheet.PivotTables("PivotTable1").PivotFields("Sum of Salaries").Orientation = xlHidden
+  
+End Sub
+
+Remove Calculated Pivot Fields
+Sub RemoveCalculatedField()
+'PURPOSE: Remove a calculated field from a pivot table
+'SOURCE: www.TheSpreadsheetGuru.com
+
+Dim pvt As PivotTable
+Dim pf As PivotField
+Dim pi As PivotItem
+
+'Set Variable to Desired Pivot Table
+  Set pvt = ActiveSheet.PivotTables("PivotTable1")
+
+'Set Variable Equal to Desired Calculated Data Field
+  For Each pf In pvt.DataFields
+    If pf.SourceName = "Inflation" Then Exit For
+  Next
+
+'Hide/Remove the Calculated Field
+  pf.DataRange.Cells(1, 1).PivotItem.Visible = False
+
+End Sub
+
+Report Filter On A Single Item
+Sub ReportFiltering_Single()
+'PURPOSE: Filter on a single item with the Report Filter field
+
+
+Dim pf As PivotField
+
+Set pf = ActiveSheet.PivotTables("PivotTable2").PivotFields("Fiscal_Year")
+
+'Clear Out Any Previous Filtering
+  pf.ClearAllFilters
+
+'Filter on 2014 items
+  pf.CurrentPage = "2014"
+
+End Sub
+
+Report Filter On Multiple Items
+Sub ReportFiltering_Multiple()
+'PURPOSE: Filter on multiple items with the Report Filter field
+
+
+Dim pf As PivotField
+
+Set pf = ActiveSheet.PivotTables("PivotTable2").PivotFields("Variance_Level_1")
+
+'Clear Out Any Previous Filtering
+  pf.ClearAllFilters
+
+'Enable filtering on multiple items
+    pf.EnableMultiplePageItems = True
+    
+'Must turn off items you do not want showing
+    pf.PivotItems("Jan").Visible = False
+    pf.PivotItems("Feb").Visible = False
+    pf.PivotItems("Mar").Visible = False
+
+End Sub
+
+Clear Report Filter
+Sub ClearReportFiltering()
+'PURPOSE: How to clear the Report Filter field
+
+
+Dim pf As PivotField
+
+Set pf = ActiveSheet.PivotTables("PivotTable2").PivotFields("Fiscal_Year")
+
+'Option 1: Clear Out Any Previous Filtering
+  pf.ClearAllFilters
+  
+'Option 2: Show All (remove filtering)
+  pf.CurrentPage = "(All)"
+
+End Sub
+
+Refresh Pivot Table(s)
+Sub RefreshingPivotTables()
+'PURPOSE: Shows various ways to refresh Pivot Table Data
+
+
+'Refresh A Single Pivot Table
+  ActiveSheet.PivotTables("PivotTable1").PivotCache.Refresh
+  
+'Refresh All Pivot Tables
+  ActiveWorkbook.RefreshAll
+    
+End Sub
+
+Change Pivot Table Data Source Range
+Sub ChangePivotDataSourceRange()
+'PURPOSE: Change the range a Pivot Table pulls from
+
+
+Dim sht As Worksheet
+Dim SrcData As String
+Dim pvtCache As PivotCache
+
+'Determine the data range you want to pivot
+  Set sht = ThisWorkbook.Worksheets("Sheet1")
+  SrcData = sht.Name & "!" & Range("A1:R100").Address(ReferenceStyle:=xlR1C1)
+  
+'Create New Pivot Cache from Source Data
+  Set pvtCache = ActiveWorkbook.PivotCaches.Create( _
+    SourceType:=xlDatabase, _
+    SourceData:=SrcData)
+
+'Change which Pivot Cache the Pivot Table is referring to
+  ActiveSheet.PivotTables("PivotTable1").ChangePivotCache (pvtCache)
+
+End Sub
+
+Grand Totals
+Sub PivotGrandTotals()
+'PURPOSE: Show setup for various Pivot Table Grand Total options
+
+
+Dim pvt As PivotTable
+
+Set pvt = ActiveSheet.PivotTables("PivotTable1")
+
+'Off for Rows and Columns
+  pvt.ColumnGrand = False
+  pvt.RowGrand = False
+
+'On for Rows and Columns
+  pvt.ColumnGrand = True
+  pvt.RowGrand = True
+
+'On for Rows only
+  pvt.ColumnGrand = False
+  pvt.RowGrand = True
+  
+'On for Columns Only
+  pvt.ColumnGrand = True
+  pvt.RowGrand = False
+
+End Sub
+
+Report Layout
+Sub PivotReportLayout()
+'PURPOSE: Show setup for various Pivot Table Report Layout options
+
+
+Dim pvt As PivotTable
+
+Set pvt = ActiveSheet.PivotTables("PivotTable1")
+
+'Show in Compact Form
+  pvt.RowAxisLayout xlCompactRow
+
+'Show in Outline Form
+  pvt.RowAxisLayout xlOutlineRow
+  
+'Show in Tabular Form
+  pvt.RowAxisLayout xlTabularRow
+    
+End Sub
+
+Formatting A Pivot Table's Data
+Sub PivotTable_DataFormatting()
+'PURPOSE: Various ways to format a Pivot Table's data
+
+
+Dim pvt As PivotTable
+
+Set pvt = ActiveSheet.PivotTables("PivotTable1")
+
+'Change Data's Number Format
+  pvt.DataBodyRange.NumberFormat = "#,##0;(#,##0)"
+
+'Change Data's Fill Color
+  pvt.DataBodyRange.Interior.Color = RGB(0, 0, 0)
+
+'Change Data's Font Type
+  pvt.DataBodyRange.Font.FontStyle = "Arial"
+
+End Sub
+
+Formatting A Pivot Field's Data
+Sub PivotField_DataFormatting()
+'PURPOSE: Various ways to format a Pivot Field's data
+
+
+Dim pf As PivotField
+
+Set pf = ActiveSheet.PivotTables("PivotTable1").PivotFields("Months")
+
+'Change Data's Number Format
+  pf.DataRange.NumberFormat = "#,##0;(#,##0)"
+  
+'Change Data's Fill Color
+  pf.DataRange.Interior.Color = RGB(219, 229, 241)
+
+'Change Data's Font Type
+  pf.DataRange.Font.FontStyle = "Arial"
+
+End Sub
+
+Expand/Collapse Entire Field Detail
+Sub PivotField_ExpandCollapse()
+'PURPOSE: Shows how to Expand or Collapse the detail of a Pivot Field
+
+
+Dim pf As PivotField
+
+Set pf = ActiveSheet.PivotTables("PivotTable1").PivotFields("Month")
+
+'Collapse Pivot Field
+  pf.ShowDetail = False
+  
+'Expand Pivot Field
+  pf.ShowDetail = True
+
+End Sub
